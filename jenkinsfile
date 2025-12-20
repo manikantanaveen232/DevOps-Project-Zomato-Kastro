@@ -98,8 +98,6 @@ pipeline {
             kubectl apply -f Kubernetes/deployment.yaml
             kubectl apply -f Kubernetes/node-service.yaml
             kubectl apply -f Kubernetes/service.yaml
-
-            kubectl rollout status deployment/zomato-deployment
             '''
         }
     }
