@@ -83,13 +83,16 @@ pipeline {
         //         }
         //     }
         // }
- stage('Deploy to EKS') {
+stage('Deploy to EKS') {
     environment {
-        AWS_DEFAULT_REGION = 'us-east-1'   // change if needed
+        AWS_DEFAULT_REGION = 'us-east-1'
         CLUSTER_NAME = 'Manikanta'
     }
     steps {
-        withAWS(credentials: 'aws-eks-creds', region: 'us-east-1') {
+        withCredentials([[
+            $class: 'AmazonWebServicesCredentialsBinding',
+            credentialsId: 'aws-eks-creds'
+        ]]) {
             sh '''
             echo "Updating kubeconfig..."
             aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION
@@ -102,6 +105,7 @@ pipeline {
         }
     }
 }
+
 
     }
 
