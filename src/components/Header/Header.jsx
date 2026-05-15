@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Header.scss";
-import Logo from "../../assets/images/Zomato-Logo.png";
+import Logo from "../../assets/images/zomoto-Logo.png";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import blackLogo from "../../assets/images/blackLogo.webp";

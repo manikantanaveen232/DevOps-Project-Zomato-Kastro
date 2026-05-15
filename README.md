@@ -1,6 +1,6 @@
-# 🚀 **DevOps Project: ZOMATO Clone App Deployment**
+# 🚀 **DevOps Project: zomoto Clone App Deployment**
 
-In this **DevOps project**, I demonstrate how to **deploy a ZOMATO Clone App** using a variety of modern DevOps tools and services.
+In this **DevOps project**, I demonstrate how to **deploy a zomoto Clone App** using a variety of modern DevOps tools and services.
 
 ## 🛠️ Tools & Services Used:
 
@@ -25,7 +25,7 @@ In this **DevOps project**, I demonstrate how to **deploy a ZOMATO Clone App** u
 ---
 
 ### 📂 GitHub Repo Link:  
-[**ZOMATO Clone DevOps Project**](#)
+[**zomoto Clone DevOps Project**](#)
 
 ### 📹 DevOps Project Video Link:  
 [![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=flat-square&logo=youtube&logoColor=white)](https://youtu.be/GyoI6-I68aQ)
