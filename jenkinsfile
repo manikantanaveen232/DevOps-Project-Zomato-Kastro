@@ -137,7 +137,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'master',
-                url: 'https://github.com/manikantanaveen232/DevOps-Project-Zomato-Kastro.git'...
+                url: 'https://github.com/manikantanaveen232/DevOps-Project-Zomato-Kastro.git'
             }
         }
 
