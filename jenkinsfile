@@ -136,7 +136,7 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                git branch: 'main',
+                git branch: 'master',
                 url: 'https://github.com/manikantanaveen232/DevOps-Project-Zomato-Kastro.git'
             }
         }
@@ -161,7 +161,7 @@ pipeline {
                 sh '''
                 docker run -d \
                 --name $CONTAINER_NAME \
-                -p 3000:3000 \
+                -p 80:80 \
                 $IMAGE_NAME
                 '''
             }
