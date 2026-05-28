@@ -12,7 +12,7 @@ RUN npm run build
 
 RUN npm install -g serve
 
-EXPOSE 80
+EXPOSE 82
 
 CMD ["serve", "-s", "build", "-l", "80"]
 
