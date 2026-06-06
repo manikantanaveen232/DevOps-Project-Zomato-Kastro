@@ -1,181 +1,120 @@
-// pipeline {
-//     agent any
-
-//     tools {
-//         jdk 'jdk17'
-//         nodejs 'node25'
-//     }
-
-//     environment {
-//         SCANNER_HOME = tool 'sonar-scanner'
-//     }
-
-//     stages {
-
-//         stage('Clean Workspace') {
-//             steps {
-//                 cleanWs()
-//             }
-//         }
-
-//         stage('Git Checkout') {
-//             steps {
-//                 git branch: 'master',
-//                     url: 'https://github.com/manikantanaveen232/DevOps-Project-Zomato-Kastro.git'
-//             }
-//         }
-
-        // stage('Install NPM Dependencies') {
-        //     steps {
-        //         sh 'npm ci'
-        //     }
-        // }
-
-        // stage('Build App') {
-        //     steps {
-        //         sh 'npm run build'
-        //     }
-        // }
-
-        // stage('SonarQube Analysis') {
-        //     steps {
-        //         withSonarQubeEnv('sonar-server') {
-        //             sh """
-        //             ${SCANNER_HOME}/bin/sonar-scanner \
-        //             -Dsonar.projectName=zomato \
-        //             -Dsonar.projectKey=zomato
-        //             """
-        //         }
-        //     }
-        // }
-
-        // stage('Code Quality Gate') {
-        //     steps {
-        //         script {
-        //             waitForQualityGate abortPipeline: false,
-        //                                credentialsId: 'Sonar-token'
-        //         }
-        //     }
-        // }
-
-        // stage('Clean Old Docker Image') {
-        //     steps {
-        //         sh '''
-        //         docker rmi -f zomato || true
-        //         docker rmi -f manikantaprasanna/zomato:latest || true
-        //         '''
-        //     }
-        // }
-
-        // stage('Build Docker Image') {
-        //     steps {
-        //         sh 'docker build -t zomato .'
-        //     }
-        // }
-
-        // stage('Push to DockerHub') {
-        //     steps {
-        //         script {
-        //             withDockerRegistry(credentialsId: 'docker') {
-        //                 sh 'docker tag zomato manikantaprasanna/zomato:latest'
-        //                 sh 'docker push manikantaprasanna/zomato:latest'
-        //             }
-        //         }
-        //     }
-        // }
-// stage('Deploy to EKS') {
-//     environment {
-//         AWS_DEFAULT_REGION = 'us-east-1'
-//         CLUSTER_NAME = 'Manikanta'
-//     }
-//     steps {
-//         withCredentials([[
-//             $class: 'AmazonWebServicesCredentialsBinding',
-//             credentialsId: 'aws-eks-creds'
-//         ]]) {
-//             sh '''
-//             echo "Updating kubeconfig..."
-//             aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION
-
-//             echo "Deploying application to Kubernetes..."
-//             kubectl apply -f Kubernetes/deployment.yaml
-//             kubectl apply -f Kubernetes/node-service.yaml
-//             kubectl apply -f Kubernetes/service.yaml
-//             '''
-//         }
-//     }
-// }
-
-
-//     }
-
-//     post {
-//         always {
-//             echo 'Pipeline execution completed'
-//         }
-//         failure {
-//             echo 'Pipeline failed'
-//         }
-//     }
-// }
 pipeline {
     agent any
 
+    tools {
+        jdk 'jdk17'
+        nodejs 'node25'
+    }
+
     environment {
-        IMAGE_NAME = "myapp"
-        CONTAINER_NAME = "myapp-container"
+        SCANNER_HOME = tool 'sonar-scanner'
     }
 
     stages {
 
         stage('Clean Workspace') {
             steps {
-                deleteDir()
+                cleanWs()
             }
         }
 
-        stage('Checkout Code') {
+        stage('Git Checkout') {
             steps {
                 git branch: 'master',
-                url: 'https://github.com/manikantanaveen232/DevOps-Project-Zomato-Kastro.git'
+                    url: 'https://github.com/manikantanaveen232/DevOps-Project-Zomato-Kastro.git'
+            }
+        }
+
+        stage('Install NPM Dependencies') {
+            steps {
+                sh 'npm ci'
+            }
+        }
+
+        stage('Build App') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonar-server') {
+                    sh """
+                    ${SCANNER_HOME}/bin/sonar-scanner \
+                    -Dsonar.projectName=zomato \
+                    -Dsonar.projectKey=zomato
+                    """
+                }
+            }
+        }
+
+        stage('Code Quality Gate') {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: false,
+                                       credentialsId: 'Sonar-token'
+                }
+            }
+        }
+
+        stage('Clean Old Docker Image') {
+            steps {
+                sh '''
+                docker rmi -f zomato || true
+                docker rmi -f manikantaprasanna/zomato:latest || true
+                '''
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME .'
+                sh 'docker build -t zomato .'
             }
         }
 
-        stage('Stop Old Container') {
+        stage('Push to DockerHub') {
             steps {
-                sh '''
-                docker stop $CONTAINER_NAME || true
-                docker rm $CONTAINER_NAME || true
-                '''
+                script {
+                    withDockerRegistry(credentialsId: 'docker') {
+                        sh 'docker tag zomato manikantaprasanna/zomato:latest'
+                        sh 'docker push manikantaprasanna/zomato:latest'
+                    }
+                }
             }
         }
+stage('Deploy to EKS') {
+    environment {
+        AWS_DEFAULT_REGION = 'us-east-1'
+        CLUSTER_NAME = 'eks-prod'
+    }
+    steps {
+        withCredentials([[
+            $class: 'AmazonWebServicesCredentialsBinding',
+            credentialsId: 'aws-eks-cred'
+        ]]) {
+            sh '''
+            echo "Updating kubeconfig..."
+            aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION
 
-        stage('Run New Container') {
-            steps {
-                sh '''
-                docker run -d \
-                --name $CONTAINER_NAME \
-                -p 80:80 \
-                $IMAGE_NAME
-                '''
-            }
+            echo "Deploying application to Kubernetes..."
+            kubectl apply -f Kubernetes/deployment.yaml
+            kubectl apply -f Kubernetes/node-service.yaml
+            kubectl apply -f Kubernetes/service.yaml
+            '''
         }
+    }
+}
+
 
     }
 
     post {
-        success {
-            echo 'Application Deployed Successfully'
+        always {
+            echo 'Pipeline execution completed'
         }
-
         failure {
-            echo 'Deployment Failed'
+            echo 'Pipeline failed'
         }
     }
 }
