@@ -37,73 +37,88 @@ pipeline {
         //     }
         // }
 
-        stage('SonarQube Analysis') {
-            steps {
-               withSonarQubeEnv('sonar-server') {
-            withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                sh """
-                ${SCANNER_HOME}/bin/sonar-scanner \
-                -Dsonar.projectKey=zomato \
-                -Dsonar.projectName=zomato \
-                -Dsonar.sources=. \
-                -Dsonar.token=${SONAR_TOKEN}
-                """
-            }
-        }
-    }
-}
+//         stage('SonarQube Analysis') {
+//             steps {
+//                withSonarQubeEnv('sonar-server') {
+//             withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+//                 sh """
+//                 ${SCANNER_HOME}/bin/sonar-scanner \
+//                 -Dsonar.projectKey=zomato \
+//                 -Dsonar.projectName=zomato \
+//                 -Dsonar.sources=. \
+//                 -Dsonar.token=${SONAR_TOKEN}
+//                 """
+//             }
+//         }
+//     }
+// }
 
-stage('Code Quality Gate') {
-    steps {
-        timeout(time: 5, unit: 'MINUTES') {
-            waitForQualityGate abortPipeline: false
-        }
-    }
-}
+// stage('Code Quality Gate') {
+//     steps {
+//         timeout(time: 5, unit: 'MINUTES') {
+//             waitForQualityGate abortPipeline: false
+//         }
+//     }
+// }
 
-        stage('Clean Old Docker Image') {
-            steps {
-                sh '''
-                docker rmi -f zomato || true
-                docker rmi -f manikantaprasanna/zomato:latest || true
-                '''
-            }
-        }
+        // stage('Clean Old Docker Image') {
+        //     steps {
+        //         sh '''
+        //         docker rmi -f zomato || true
+        //         docker rmi -f manikantaprasanna/zomato:latest || true
+        //         '''
+        //     }
+        // }
 
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t zomato .'
-            }
-        }
+        // stage('Build Docker Image') {
+        //     steps {
+        //         sh 'docker build -t zomato .'
+        //     }
+        // }
 
-        stage('Push to DockerHub') {
-            steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker') {
-                        sh 'docker tag zomato manikantaprasanna/zomato:latest'
-                        sh 'docker push manikantaprasanna/zomato:latest'
-                    }
-                }
-            }
-        }
+        // stage('Push to DockerHub') {
+        //     steps {
+        //         script {
+        //             withDockerRegistry(credentialsId: 'docker') {
+        //                 sh 'docker tag zomato manikantaprasanna/zomato:latest'
+        //                 sh 'docker push manikantaprasanna/zomato:latest'
+        //             }
+        //         }
+        //     }
+        // }
 stage('Deploy to EKS') {
     environment {
         AWS_DEFAULT_REGION = 'us-east-1'
         CLUSTER_NAME = 'eks-prod'
     }
     steps {
-        withCredentials([[
-            $class: 'AmazonWebServicesCredentialsBinding',
-            credentialsId: 'aws-eks-cred'
-        ]]) {
+        withCredentials([
+            [$class: 'AmazonWebServicesCredentialsBinding',
+             credentialsId: 'aws-eks-cred']
+        ]) {
             sh '''
-            echo "Updating kubeconfig..."
-            aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION
+            set -e
 
-            echo "Deploying application to Kubernetes..."
+            echo "AWS Identity"
+            aws sts get-caller-identity
+
+            echo "Updating kubeconfig"
+            aws eks update-kubeconfig \
+              --name $CLUSTER_NAME \
+              --region $AWS_DEFAULT_REGION
+
+            echo "Checking cluster access"
+            kubectl get nodes
+
+            echo "Deploying manifests"
             kubectl apply -f Kubernetes/deployment.yaml
-            kubectl apply -f Kubernetes/node-service.yaml
             kubectl apply -f Kubernetes/service.yaml
+            kubectl apply -f Kubernetes/node-service.yaml
+
+            echo "Verifying deployment"
+            kubectl get deployments
+            kubectl get pods
+            kubectl get svc
             '''
         }
     }

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: zomoto
-        image: manikantaprasanna/zomoto:latest
+        image: manikantaprasanna/zomoto
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
